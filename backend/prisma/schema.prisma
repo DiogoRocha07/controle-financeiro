@@ -15,7 +15,7 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid())
   email     String   @unique
   username  String
   password  String
@@ -25,7 +25,7 @@ model User {
 }
 
 model Category {
-  id   Int    @id @default(autoincrement())
+  id   String    @id @default(uuid())
   name String @unique
 
   transactions Transaction[]
@@ -37,16 +37,16 @@ enum TransactionType {
 }
 
 model Transaction {
-  id          Int             @id @default(autoincrement())
+  id          String             @id @default(uuid())
   description String
   amount      Float
   type        TransactionType
   date        DateTime
 
-  categoryId Int
+  categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
-  userId Int
+  userId String
   user   User @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())

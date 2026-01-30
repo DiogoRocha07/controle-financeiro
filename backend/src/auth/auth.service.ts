@@ -3,29 +3,42 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersService } from 'src/users/users.service';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { JwtToken } from './dto/jwtToken';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private prisma: PrismaService,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async signIn(email: string, password: string) {
+  async signIn(
+    email: string,
+    password: string,
+  ): Promise<{ message: string; access_token: string }> {
     const user = await this.usersService.findOne(email);
 
     if (!user) {
-      throw new UnauthorizedException('User not exists');
+      throw new UnauthorizedException('Email ou senha incorretos!');
     }
 
-    if (password !== user.password) {
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
       throw new ConflictException('Email ou senha incorretos!');
     }
 
+    const payload: JwtToken = { sub: user.id, email: user.email };
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    const token: string = await this.jwtService.signAsync(payload);
+
     return {
       message: 'Login successful',
+      access_token: token,
     };
   }
 
@@ -36,7 +49,15 @@ export class AuthService {
       throw new ConflictException('User already exists');
     }
 
-    const user = await this.usersService.createUser(username, email, password);
+    const saltRounds = 10;
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const user = await this.usersService.createUser(
+      username,
+      email,
+      hashedPassword,
+    );
 
     return {
       message: 'User successfully created',
