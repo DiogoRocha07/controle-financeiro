@@ -19,7 +19,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ message: string; access_token: string }> {
-    const user = await this.usersService.findOne(email);
+    const user = await this.usersService.findByEmail(email);
 
     if (!user) {
       throw new UnauthorizedException('Email ou senha incorretos!');
@@ -28,12 +28,11 @@ export class AuthService {
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
-      throw new ConflictException('Email ou senha incorretos!');
+      throw new UnauthorizedException('Email ou senha incorretos!');
     }
 
     const payload: JwtToken = { sub: user.id, email: user.email };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const token: string = await this.jwtService.signAsync(payload);
 
     return {
@@ -43,7 +42,7 @@ export class AuthService {
   }
 
   async register(username: string, email: string, password: string) {
-    const userExisting = await this.usersService.findOne(email);
+    const userExisting = await this.usersService.findByEmail(email);
 
     if (userExisting) {
       throw new ConflictException('User already exists');
@@ -59,9 +58,12 @@ export class AuthService {
       hashedPassword,
     );
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _password, ...safeUser } = user;
+
     return {
       message: 'User successfully created',
-      user,
+      user: safeUser,
     };
   }
 }

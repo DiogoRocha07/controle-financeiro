@@ -1,18 +1,39 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Body, Controller, Post, Get, Query, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Query,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { AuthUser } from 'src/auth/types/auth-user.type';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('me')
-  async findByEmail(@Query('email') email: string) {
-    return this.usersService.findOne(email);
+  getMe(@CurrentUser() user: AuthUser) {
+    return this.usersService.findById(user.userId);
   }
 
+  @Get('user')
+  async findByEmail(@Query('email') email: string) {
+    return this.usersService.findByEmail(email);
+  }
+
+  @Get()
+  async getAll() {
+    return this.usersService.getAllUsers();
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Delete('me')
-  async deleteMetadata(@Query('email') email: string) {
-    return this.usersService.deleteUser(email);
+  async deleteMetadata(@CurrentUser() user: AuthUser) {
+    return this.usersService.deleteUser(user.userId);
   }
 }
