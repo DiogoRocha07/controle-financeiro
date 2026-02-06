@@ -2,38 +2,62 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CreateUserDto } from './dto/create-user.dto';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prismaService: PrismaService) {}
 
-  async findOne(email: string) {
-    const user = await this.prisma.user.findUnique({
+  async findById(id: string) {
+    return this.prismaService.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+      },
+    });
+  }
+
+  async findByEmail(email: string) {
+    const user = await this.prismaService.user.findUnique({
       where: { email },
     });
 
     return user || null;
   }
 
+  async getAllUsers(): Promise<UserResponseDto[]> {
+    const users = await this.prismaService.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+      },
+    });
+
+    return users;
+  }
+
   async createUser(username: string, email: string, password: string) {
-    const user = await this.prisma.user.create({
+    const user = await this.prismaService.user.create({
       data: { username, email, password },
     });
 
     return user;
   }
 
-  async deleteUser(email: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: email },
+  async deleteUser(userId: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: { id: userId },
     });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    await this.prisma.user.delete({
-      where: { email: email },
+    await this.prismaService.user.delete({
+      where: { id: userId },
     });
 
     return {

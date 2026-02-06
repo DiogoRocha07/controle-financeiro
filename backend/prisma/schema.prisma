@@ -1,13 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-  moduleFormat = "cjs"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -15,20 +7,29 @@ datasource db {
 }
 
 model User {
-  id        String      @id @default(uuid())
+  id        String   @id @default(uuid())
   email     String   @unique
   username  String
   password  String
   createdAt DateTime @default(now())
 
-  transactions Transaction[]
+  hiddenCategories UserHiddenCategory[]
+  transactions     Transaction[]
+  categories       Category[]
 }
 
 model Category {
-  id   String    @id @default(uuid())
-  name String @unique
+  id       String  @id @default(uuid())
+  name     String
+  isSystem Boolean @default(false)
 
-  transactions Transaction[]
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  transactions     Transaction[]
+  hiddenCategories UserHiddenCategory[]
+
+  @@unique([name, userId])
 }
 
 enum TransactionType {
@@ -36,8 +37,19 @@ enum TransactionType {
   EXPENSE
 }
 
+model UserHiddenCategory {
+  id         String @id @default(uuid())
+  userId     String
+  categoryId String
+
+  user     User     @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([userId, categoryId])
+}
+
 model Transaction {
-  id          String             @id @default(uuid())
+  id          String          @id @default(uuid())
   description String
   amount      Float
   type        TransactionType
@@ -47,7 +59,7 @@ model Transaction {
   category   Category @relation(fields: [categoryId], references: [id])
 
   userId String
-  user   User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
 }
