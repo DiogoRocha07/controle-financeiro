@@ -8,8 +8,8 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { AuthUser } from 'src/auth/types/auth-user.type';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { AuthUser } from 'src/common/types/auth-user.type';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('users')
 export class UsersController {

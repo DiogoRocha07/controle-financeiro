@@ -11,8 +11,8 @@ import {
 import { CategoryService } from './category.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RegisterCategory } from './dto/register-category.dto';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { AuthUser } from 'src/auth/types/auth-user.type';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { AuthUser } from 'src/common/types/auth-user.type';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Controller('categories')
