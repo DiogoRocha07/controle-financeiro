@@ -2,7 +2,7 @@ import {
   Body,
   Controller,
   Get,
-  Query,
+  // Query,
   Delete,
   UseGuards,
 } from '@nestjs/common';
@@ -10,27 +10,40 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AuthUser } from 'src/common/types/auth-user.type';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @ApiOperation({ summary: 'Busca usuario por ID' })
+  @ApiResponse({ status: 200 })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getMe(@CurrentUser() user: AuthUser) {
     return this.usersService.findById(user.userId);
   }
 
-  @Get('user')
-  async findByEmail(@Query('email') email: string) {
-    return this.usersService.findByEmail(email);
-  }
+  // @Get('user')
+  // async findByEmail(@Query('email') email: string) {
+  //   return this.usersService.findByEmail(email);
+  // }
 
   @Get()
   async getAll() {
     return this.usersService.getAllUsers();
   }
 
+  @ApiOperation({ summary: 'Exclui usuario' })
+  @ApiResponse({ status: 200 })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete('me')
   async deleteMetadata(@CurrentUser() user: AuthUser) {

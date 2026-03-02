@@ -6,11 +6,33 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RegisterTransaction } from './dto/register-transaction.dto';
 import { UpdateTransaction } from './dto/update-transaction.dto';
-import { TransactionType } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { FindTransactionDto } from './dto/find-order.dto';
 
 @Injectable()
 export class TransactionService {
   constructor(private prismaService: PrismaService) {}
+
+  private buildDateRange(
+    startDate?: string,
+    endDate?: string,
+  ): Prisma.DateTimeFilter {
+    const range: Prisma.DateTimeFilter = {};
+
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      range.gte = start;
+    }
+
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      range.lte = end;
+    }
+
+    return range;
+  }
 
   async createTransaction(userId: string, data: RegisterTransaction) {
     const { description, amount, type, categoryId, date } = data;
@@ -31,16 +53,33 @@ export class TransactionService {
     });
   }
 
-  async findAllByUser(userId: string) {
-    const transaction = await this.prismaService.transaction.findMany({
-      where: { userId: userId },
-    });
+  async findAllByUser(userId: string, filters: FindTransactionDto) {
+    const { type, categoryId, startDate, endDate } = filters;
 
-    if (transaction.length === 0) {
-      throw new NotFoundException('Transações não encontrada');
+    const where: Prisma.TransactionWhereInput = {
+      userId,
+    };
+
+    if (type) {
+      where.type = type;
     }
 
-    return transaction;
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    if (startDate || endDate) {
+      where.date = this.buildDateRange(startDate, endDate);
+    }
+
+    const transactions = await this.prismaService.transaction.findMany({
+      where,
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
+    return transactions;
   }
 
   async findById(userId: string, id: string) {
@@ -55,36 +94,6 @@ export class TransactionService {
     return transaction;
   }
 
-  async findByCategory(categoryId: string, userId: string) {
-    const transaction = await this.prismaService.transaction.findMany({
-      where: { userId, categoryId },
-    });
-
-    if (transaction.length === 0) {
-      throw new NotFoundException('Nenhuma transação nessa categoria');
-    }
-
-    return transaction;
-  }
-
-  async findByType(type: TransactionType, userId: string) {
-    const transaction = await this.prismaService.transaction.findMany({
-      where: { userId, type },
-    });
-
-    if (transaction.length === 0) {
-      throw new NotFoundException(
-        'Não foi encontrada nenhuma transação com esse tipo',
-      );
-    }
-
-    if (type && !Object.values(TransactionType).includes(type)) {
-      throw new BadRequestException('Tipo invalido');
-    }
-
-    return transaction;
-  }
-
   async updateTransaction(id: string, userId: string, data: UpdateTransaction) {
     const transaction = await this.prismaService.transaction.findUnique({
       where: { userId: userId, id },
@@ -93,6 +102,8 @@ export class TransactionService {
     if (!transaction) {
       throw new NotFoundException('Transação não encontrada');
     }
+
+    console.log(data);
 
     await this.prismaService.transaction.update({
       where: { userId: userId, id },

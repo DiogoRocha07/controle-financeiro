@@ -15,12 +15,23 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { AuthUser } from 'src/common/types/auth-user.type';
 import { RegisterTransaction } from './dto/register-transaction.dto';
 import { UpdateTransaction } from './dto/update-transaction.dto';
-import { TransactionType } from '@prisma/client';
+import { FindTransactionDto } from './dto/find-order.dto';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Transactions')
+@ApiBearerAuth()
 @Controller('transactions')
 export class TransactionController {
   constructor(private transactionService: TransactionService) {}
 
+  @ApiOperation({ summary: 'Criar Transação' })
+  @ApiResponse({ status: 201, description: 'Transação criada' })
   @UseGuards(JwtAuthGuard)
   @Post()
   async createTransaction(
@@ -30,28 +41,23 @@ export class TransactionController {
     return this.transactionService.createTransaction(user.userId, body);
   }
 
+  @ApiOperation({ summary: 'Listar transações com filtros' })
+  @ApiQuery({ name: 'type', required: false, enum: ['INCOME', 'EXPENSE'] })
+  @ApiQuery({ name: 'categoryId', required: false })
+  @ApiQuery({ name: 'startDate', required: false })
+  @ApiQuery({ name: 'endDate', required: false })
   @UseGuards(JwtAuthGuard)
   @Get()
   async findTransactions(
     @CurrentUser() user: AuthUser,
-    @Query('type') type?: TransactionType,
+    @Query() filters: FindTransactionDto,
   ) {
-    if (type) {
-      return this.transactionService.findByType(type, user.userId);
-    }
-
-    return this.transactionService.findAllByUser(user.userId);
+    return this.transactionService.findAllByUser(user.userId, filters);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('category/:categoryId')
-  async findByCategory(
-    @Param('categoryId') categoryId: string,
-    @CurrentUser() user: AuthUser,
-  ) {
-    return this.transactionService.findByCategory(categoryId, user.userId);
-  }
-
+  @ApiOperation({ summary: 'Buscar transação por ID' })
+  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 404, description: 'Transação não encontrada' })
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findTransaction(
@@ -61,6 +67,8 @@ export class TransactionController {
     return this.transactionService.findById(user.userId, id);
   }
 
+  @ApiOperation({ summary: 'Atualizar transação' })
+  @ApiResponse({ status: 200 })
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async updateTransaction(
@@ -71,6 +79,8 @@ export class TransactionController {
     return this.transactionService.updateTransaction(id, user.userId, body);
   }
 
+  @ApiOperation({ summary: 'Excluir transação' })
+  @ApiResponse({ status: 200 })
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteTransaction(
