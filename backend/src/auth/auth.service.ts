@@ -7,6 +7,7 @@ import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { JwtToken } from './dto/jwtToken';
+import { LoginDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,16 +17,15 @@ export class AuthService {
   ) {}
 
   async signIn(
-    email: string,
-    password: string,
+    dto: LoginDto,
   ): Promise<{ message: string; access_token: string }> {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByEmail(dto.email);
 
     if (!user) {
       throw new UnauthorizedException('Email ou senha incorretos!');
     }
 
-    const validPassword = await bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(dto.password, user.password);
 
     if (!validPassword) {
       throw new UnauthorizedException('Email ou senha incorretos!');

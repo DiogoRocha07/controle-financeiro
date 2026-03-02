@@ -24,7 +24,7 @@ model Category {
   isSystem Boolean @default(false)
 
   userId String?
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   transactions     Transaction[]
   hiddenCategories UserHiddenCategory[]
@@ -42,7 +42,7 @@ model UserHiddenCategory {
   userId     String
   categoryId String
 
-  user     User     @relation(fields: [userId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   category Category @relation(fields: [categoryId], references: [id])
 
   @@unique([userId, categoryId])
@@ -59,7 +59,7 @@ model Transaction {
   category   Category @relation(fields: [categoryId], references: [id])
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }

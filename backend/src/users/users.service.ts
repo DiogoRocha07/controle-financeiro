@@ -1,7 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 
 @Injectable()
@@ -20,6 +18,8 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
+    console.log('EMAIL RECEBIDO:', email);
+
     const user = await this.prismaService.user.findUnique({
       where: { email },
     });
