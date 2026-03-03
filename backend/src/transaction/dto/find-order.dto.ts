@@ -5,7 +5,7 @@ import { IsDateString, IsEnum, IsOptional, IsUUID } from 'class-validator';
 export class FindTransactionDto {
   @ApiProperty()
   @IsOptional()
-  @IsEnum({ enum: TransactionType })
+  @IsEnum(TransactionType)
   type?: TransactionType;
 
   @ApiProperty()

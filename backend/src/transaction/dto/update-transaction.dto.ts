@@ -22,7 +22,7 @@ export class UpdateTransaction {
 
   @ApiProperty()
   @IsOptional()
-  @IsEnum({ enum: TransactionType })
+  @IsEnum(TransactionType)
   type?: TransactionType;
 
   @ApiProperty()
