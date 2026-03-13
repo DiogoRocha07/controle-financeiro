@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransactionType } from '@prisma/client';
+import { Type } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
@@ -17,6 +18,7 @@ export class UpdateTransaction {
 
   @ApiProperty()
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   amount?: number;
 

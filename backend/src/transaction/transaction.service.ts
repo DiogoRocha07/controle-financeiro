@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RegisterTransaction } from './dto/register-transaction.dto';
 import { UpdateTransaction } from './dto/update-transaction.dto';
@@ -35,12 +31,6 @@ export class TransactionService {
   }
 
   async createTransaction(userId: string, data: RegisterTransaction) {
-    const { description, amount, type, categoryId, date } = data;
-
-    if (!description || !amount || !type || !categoryId || !date) {
-      throw new BadRequestException('Some date is null');
-    }
-
     return this.prismaService.transaction.create({
       data: {
         description: data.description,
@@ -48,7 +38,7 @@ export class TransactionService {
         type: data.type,
         categoryId: data.categoryId,
         date: data.date,
-        userId,
+        userId: userId,
       },
     });
   }
