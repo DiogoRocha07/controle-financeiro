@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ConflictException,
   Injectable,
@@ -16,9 +17,15 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signIn(
-    dto: LoginDto,
-  ): Promise<{ message: string; access_token: string }> {
+  async signIn(dto: LoginDto): Promise<{
+    message: string;
+    access_token: string;
+    user: {
+      id: string;
+      username: string;
+      email: string;
+    };
+  }> {
     const user = await this.usersService.findByEmail(dto.email);
 
     if (!user) {
@@ -37,6 +44,11 @@ export class AuthService {
 
     return {
       message: 'Login successful',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
       access_token: token,
     };
   }
@@ -58,7 +70,6 @@ export class AuthService {
       hashedPassword,
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _password, ...safeUser } = user;
 
     return {
