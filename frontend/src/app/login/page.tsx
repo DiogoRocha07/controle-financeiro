@@ -1,8 +1,44 @@
+'use client'
+
 import Link from "next/link";
 import {LoginForm} from "./LoginForm";
 import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getMe } from "@/services/userService";
 
 export default function Login() {
+  const router = useRouter();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    async function checkSession() {
+      const token = localStorage.getItem("token");
+
+      if(!token){
+        setIsCheckingAuth(false)
+        return
+      }
+
+      try{
+        await getMe();
+        router.replace("/dashboard");
+      } catch {
+        setIsCheckingAuth(false);
+      }
+    }
+
+    checkSession();
+  }, [router])
+
+  if( isCheckingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p>Carregando...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
       <div className="z-10 w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 shadow-xl">

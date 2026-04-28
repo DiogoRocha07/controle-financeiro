@@ -1,7 +1,43 @@
-import Link from 'next/link'
-import Header from '@/components/Header'
+"use client";
+
+import Link from "next/link";
+import Header from "@/components/Header";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getMe } from "@/services/userService";
 
 export default function Home() {
+  const router = useRouter();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    async function checkSession() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      try {
+        await getMe();
+        router.replace("/dashboard");
+      } catch {
+        setIsCheckingAuth(false);
+      }
+    }
+
+    checkSession();
+  }, [router]);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p>Carregando...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <Header
@@ -14,10 +50,20 @@ export default function Home() {
           </>
         }
         items={[
-          { label: 'Sobre', href: '#sobre', variant: 'link' },
-          { label: 'Contato', href: '#contato', variant: 'link' },
-          { label: 'Entrar', href: '/login', variant: 'button', tone: 'secondary' },
-          { label: 'Criar conta', href: '/register', variant: 'button', tone: 'primary' },
+          { label: "Sobre", href: "#sobre", variant: "link" },
+          { label: "Contato", href: "#contato", variant: "link" },
+          {
+            label: "Entrar",
+            href: "/login",
+            variant: "button",
+            tone: "secondary",
+          },
+          {
+            label: "Criar conta",
+            href: "/register",
+            variant: "button",
+            tone: "primary",
+          },
         ]}
         className="border-b border-slate-200/70 bg-white/70 backdrop-blur"
       />
@@ -67,8 +113,12 @@ export default function Home() {
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-medium text-slate-500">Dashboard (exemplo)</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">Resumo do mês</p>
+                  <p className="text-xs font-medium text-slate-500">
+                    Dashboard (exemplo)
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">
+                    Resumo do mês
+                  </p>
                 </div>
                 <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
                   Atualizado hoje
@@ -78,15 +128,21 @@ export default function Home() {
               <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-600">Saldo</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">R$ 2.500</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
+                    R$ 2.500
+                  </p>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-600">Receitas</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-emerald-700">R$ 4.000</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-emerald-700">
+                    R$ 4.000
+                  </p>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs font-medium text-slate-600">Despesas</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-rose-700">R$ 1.500</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-rose-700">
+                    R$ 1.500
+                  </p>
                 </div>
               </div>
             </div>
@@ -112,7 +168,8 @@ export default function Home() {
                   Controle total das finanças
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  Registre entradas e saídas em segundos e mantenha tudo organizado no mesmo lugar.
+                  Registre entradas e saídas em segundos e mantenha tudo
+                  organizado no mesmo lugar.
                 </p>
               </div>
 
@@ -122,7 +179,8 @@ export default function Home() {
                   Visualização clara dos gastos
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  Veja rapidamente quanto você gastou e identifique os maiores impactos no seu mês.
+                  Veja rapidamente quanto você gastou e identifique os maiores
+                  impactos no seu mês.
                 </p>
               </div>
 
@@ -132,7 +190,8 @@ export default function Home() {
                   Interface simples e rápida
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  Menos passos para lançar movimentações e mais tempo para tomar decisões com calma.
+                  Menos passos para lançar movimentações e mais tempo para tomar
+                  decisões com calma.
                 </p>
               </div>
             </div>
@@ -154,5 +213,5 @@ export default function Home() {
         </footer>
       </main>
     </div>
-  )
+  );
 }
